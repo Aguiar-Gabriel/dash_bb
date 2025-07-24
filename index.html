@@ -1,429 +1,338 @@
-import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, PieChart, Pie, Label } from 'recharts';
-import { ChevronDown, ChevronRight, HelpCircle, TrendingDown, List, Edit, CheckCircle, Search, DollarSign, FileText, AlertTriangle, LogOut } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Jornada de Investimentos BB</title>
+    <!-- Tailwind CSS para estilização rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para os gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <!-- Lucide Icons para os ícones -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Estilo para garantir que a fonte Inter seja aplicada */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Adicionando a fonte Inter do Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        /* Estilo para transição suave na expansão da tabela */
+        .details-row {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
 
-// --- DADOS PROCESSADOS (Baseado nos arquivos CSV fornecidos) ---
-// Os dados foram consolidados a partir dos arquivos mensais para uma visão macro.
-const screenData = [
-  {
-    id: 1,
-    stage: '1. Descoberta',
-    name: 'unidentifiedbusinessscreen',
-    friendlyName: 'Botão de Acesso Rápido',
-    accesses: 10767119,
-    clients: 2048723,
-    errors: 278003,
-    icon: <Search size={20} className="text-blue-500" />,
-    description: 'Principal ponto de entrada para a área de investimentos, localizado na tela inicial do app. É o primeiro contato da maioria dos clientes com a jornada.',
-    analysis: 'O volume altíssimo de clientes (mais de 2 milhões) mostra que há um grande interesse inicial. No entanto, a taxa de erro de 2.58% já neste primeiro passo pode ser uma barreira inicial, frustrando o usuário antes mesmo de começar.'
-  },
-  {
-    id: 2,
-    stage: '1. Descoberta',
-    name: 'advisory',
-    friendlyName: 'Tela de Orientação (Não Investidor)',
-    accesses: 361336,
-    clients: 148942,
-    errors: 15801,
-    icon: <HelpCircle size={20} className="text-blue-500" />,
-    description: 'Tela exibida para clientes que ainda não têm um histórico de investimentos. O objetivo é guiá-los, geralmente com mensagens como "Você escolhe como cuidar do seu dinheiro."',
-    analysis: 'Uma taxa de erro de 4.37% em uma tela que deveria ser de ajuda é preocupante. A complexidade ou instabilidade aqui pode fazer com que o cliente se sinta perdido e desista prematuramente.'
-  },
-  {
-    id: 3,
-    stage: '1. Descoberta',
-    name: 'unificationchooseportfolioorsimulatorscene',
-    friendlyName: 'Tela de Decisão: Simular ou Investir',
-    accesses: 392246,
-    clients: 137113,
-    errors: 20444,
-    icon: <HelpCircle size={20} className="text-blue-500" />,
-    description: 'Tela que força o usuário a escolher entre caminhos como "Quero investir em um objetivo" ou "Quero sugestões para investir", em vez de apresentar os produtos diretamente.',
-    analysis: 'Outro ponto de atrito desnecessário. A taxa de erro de 5.21% e a natureza da tela (uma escolha forçada) adicionam complexidade e podem confundir o usuário, que só quer ver as opções de investimento.'
-  },
-  {
-    id: 4,
-    stage: '2. Perfil de Investidor',
-    name: 'surveyinitv2',
-    friendlyName: 'Iniciar/Pular Questionário',
-    accesses: 1004441,
-    clients: 732882,
-    errors: 13880,
-    icon: <Edit size={20} className="text-yellow-500" />,
-    description: 'Tela onde o cliente decide se irá responder ao questionário de perfil de investidor (Suitability). É a porta de entrada para a etapa de maior abandono.',
-    analysis: 'Este é o início do maior gargalo da jornada. Embora a tela em si tenha poucos erros, ela é a porta de entrada para a etapa com a maior taxa de abandono.'
-  },
-  {
-    id: 5,
-    stage: '2. Perfil de Investidor',
-    name: 'surveyquestionsv2',
-    friendlyName: 'Perguntas do Questionário',
-    accesses: 315897,
-    clients: 254964,
-    errors: 23362,
-    icon: <List size={20} className="text-yellow-500" />,
-    description: 'Tela onde o cliente efetivamente responde às perguntas para definir seu perfil de investidor.',
-    analysis: 'A maior taxa de erro (7.39%) e a queda abrupta de 65% dos clientes (de 732k para 254k) confirmam que o questionário é a principal barreira. O processo é longo, obrigatório e instável, causando uma enorme perda de potenciais investidores.'
-  },
-  {
-    id: 6,
-    stage: '3. Exploração de Produtos',
-    name: 'investmentfunds',
-    friendlyName: 'Hub de Fundos de Investimento',
-    accesses: 1231170,
-    clients: 286655,
-    errors: 69107,
-    icon: <DollarSign size={20} className="text-green-500" />,
-    description: 'Tela principal que lista os fundos de investimento disponíveis para aplicação.',
-    analysis: 'A tela de produto mais acessada, mostrando grande interesse em Fundos. Contudo, a taxa de erro de 5.61% é alta para uma vitrine de produtos, podendo impedir o cliente de analisar as opções e prosseguir para a contratação.'
-  },
-  {
-    id: 7,
-    stage: '3. Exploração de Produtos',
-    name: 'aplicacaocdb-entrada',
-    friendlyName: 'Entrada - CDB',
-    accesses: 120469,
-    clients: 57001,
-    errors: 2216,
-    icon: <DollarSign size={20} className="text-green-500" />,
-    description: 'Primeira tela da jornada de aplicação em CDB, onde o cliente informa o valor que deseja aplicar.',
-    analysis: 'Ponto de partida para um dos produtos mais populares. A jornada é segmentada, o que pode aumentar o número de cliques e a chance de abandono.'
-  },
-  {
-    id: 8,
-    stage: '4. Contratação',
-    name: 'aplicacaocdb-listacdb',
-    friendlyName: 'Contratação Final - CDB',
-    accesses: 89286,
-    clients: 46149,
-    errors: 5614,
-    icon: <CheckCircle size={20} className="text-red-500" />,
-    description: 'Última tela do fluxo, onde o cliente escolhe o CDB específico (ex: "BB CDB DI - 1800 dias") e finaliza a contratação.',
-    analysis: 'CRÍTICO: Uma taxa de erro de 6.29% (chegando a 10.94% nos dados diários) na tela de conversão final é alarmante. O cliente superou todas as barreiras, decidiu investir e o sistema falha. Isso gera frustração máxima e perda de confiança e receita.'
-  },
-  {
-    id: 9,
-    stage: '3. Exploração de Produtos',
-    name: 'aplicacaolca-entrada',
-    friendlyName: 'Entrada - LCA',
-    accesses: 112104,
-    clients: 54721,
-    errors: 1729,
-    icon: <DollarSign size={20} className="text-green-500" />,
-    description: 'Primeira tela da jornada de aplicação em LCA, onde o cliente informa o valor que deseja aplicar.',
-    analysis: 'Comportamento similar ao CDB, com uma jornada de exploração que antecede a contratação.'
-  },
-  {
-    id: 10,
-    stage: '4. Contratação',
-    name: 'aplicacaolca-listalca',
-    friendlyName: 'Contratação Final - LCA',
-    accesses: 22534,
-    clients: 15306,
-    errors: 541,
-    icon: <CheckCircle size={20} className="text-red-500" />,
-    description: 'Última tela do fluxo, onde o cliente finaliza a contratação de LCA.',
-    analysis: 'A taxa de erro de 2.4% é menor que a do CDB, mas ainda assim preocupante para uma tela final. Cada erro aqui é uma conversão perdida.'
-  },
-   {
-    id: 11,
-    stage: '3. Exploração de Produtos',
-    name: 'aplicacaolci-entrada',
-    friendlyName: 'Entrada - LCI',
-    accesses: 34338,
-    clients: 21396,
-    errors: 512,
-    icon: <DollarSign size={20} className="text-green-500" />,
-    description: 'Primeira tela da jornada de aplicação em LCI, onde o cliente informa o valor que deseja aplicar.',
-    analysis: 'Menor volume de entrada comparado a CDB e LCA, mas segue o mesmo padrão de fluxo segmentado.'
-  },
-  {
-    id: 12,
-    stage: '4. Contratação',
-    name: 'aplicacaolci-listalci',
-    friendlyName: 'Contratação Final - LCI',
-    accesses: 84753, // Acessos maiores que a entrada, pode indicar loop ou recarregamento
-    clients: 46820,
-    errors: 1251,
-    icon: <CheckCircle size={20} className="text-red-500" />,
-    description: 'Última tela do fluxo, onde o cliente finaliza a contratação de LCI.',
-    analysis: 'A taxa de erro aqui é baixa (1.48%), mas o número de acessos ser maior que a tela de entrada é estranho. Pode indicar que usuários estão recarregando a página por algum motivo, talvez por lentidão ou erro não capturado.'
-  },
-];
-
-const funnelData = [
-  { stage: '1. Descoberta', value: 2048723, fill: '#3b82f6' },
-  { stage: '2. Perfil de Investidor', value: 732882, fill: '#f97316' },
-  { stage: '3. Exploração', value: 286655, fill: '#22c55e' },
-  { stage: '4. Contratação', value: 61455, fill: '#ef4444' }, // Soma dos clientes nas telas finais de CDB e LCA
-];
-
-// --- DADOS PARA GRÁFICOS DE INSIGHTS ---
-const clientDropOffData = [
-    {
-        name: 'Início do Questionário -> Perguntas',
-        value: screenData.find(s => s.name === 'surveyinitv2').clients - screenData.find(s => s.name === 'surveyquestionsv2').clients,
-        fill: '#ef4444'
-    },
-    {
-        name: 'Descoberta -> Perfil de Investidor',
-        value: funnelData[0].value - funnelData[1].value,
-        fill: '#f97316'
-    },
-    {
-        name: 'Perfil de Investidor -> Exploração',
-        value: funnelData[1].value - funnelData[2].value,
-        fill: '#eab308'
-    },
-];
-
-const topErrorVolumeData = [...screenData]
-    .sort((a, b) => b.errors - a.errors)
-    .slice(0, 5)
-    .map(d => ({ name: d.friendlyName, value: d.errors, fill: '#dc2626' }));
-
-
-// --- COMPONENTES DA UI ---
-
-const FunnelChart = ({ onStageClick }) => {
-    const totalClients = funnelData[0].value;
-    
-    return (
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-full">
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Funil da Jornada de Investimentos</h2>
-            <p className="text-sm text-gray-500 mb-4">Visualização da queda de clientes em cada etapa principal (Dados Mensais).</p>
-            <div className="w-full h-80">
-                <ResponsiveContainer>
-                    <BarChart layout="vertical" data={funnelData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <XAxis type="number" hide />
-                        <YAxis type="category" dataKey="stage" hide />
-                        <Tooltip
-                            contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #ddd', borderRadius: '0.5rem' }}
-                            labelStyle={{ fontWeight: 'bold', color: '#333' }}
-                            formatter={(value, name, props) => {
-                                const percentage = ((value / totalClients) * 100).toFixed(2);
-                                return [`${value.toLocaleString('pt-BR')} clientes (${percentage}%)`, null];
-                            }}
-                        />
-                        <Bar dataKey="value" barSize={60} radius={[0, 10, 10, 0]} onClick={(data) => onStageClick(data.stage)} className="cursor-pointer">
-                            {funnelData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
-            <div className="mt-4 space-y-2">
-                {funnelData.map((item, index) => {
-                    const nextValue = funnelData[index + 1] ? funnelData[index + 1].value : 0;
-                    const dropOff = nextValue > 0 ? ((item.value - nextValue) / item.value) * 100 : 0;
-
-                    return (
-                        <div key={item.stage} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-                            <div className="flex items-center">
-                                <span className="w-4 h-4 rounded-full mr-3" style={{ backgroundColor: item.fill }}></span>
-                                <span className="font-semibold text-gray-700">{item.stage}</span>
-                            </div>
-                            <div className="text-right">
-                                <span className="font-bold text-gray-800">{item.value.toLocaleString('pt-BR')}</span>
-                                {index < funnelData.length - 1 && (
-                                    <span className="text-xs text-red-500 ml-2 flex items-center justify-end">
-                                        <TrendingDown size={12} className="mr-1" />
-                                        Queda de {dropOff.toFixed(1)}%
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
-
-const ScreenTable = ({ data }) => {
-  const [expandedRow, setExpandedRow] = useState(null);
-
-  const getErrorColor = (percentage) => {
-    if (percentage >= 7) return 'bg-red-200 text-red-800';
-    if (percentage >= 4) return 'bg-yellow-200 text-yellow-800';
-    return 'bg-green-200 text-green-800';
-  };
-
-  const handleRowClick = (id) => {
-    setExpandedRow(expandedRow === id ? null : id);
-  };
-
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mt-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-1">Análise Detalhada por Tela</h2>
-      <p className="text-sm text-gray-500 mb-4">Clique em uma linha para ver a descrição e análise.</p>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="w-10"></th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tela</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clientes</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% Erro</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((item) => {
-              const errorPercentage = (item.errors / item.accesses) * 100;
-              const isExpanded = expandedRow === item.id;
-              
-              return (
-                <React.Fragment key={item.id}>
-                  <tr onClick={() => handleRowClick(item.id)} className="hover:bg-gray-100 cursor-pointer">
-                    <td className="px-4 py-4">
-                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-gray-100 rounded-lg mr-3">
-                          {item.icon}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{item.friendlyName}</div>
-                          <div className="text-xs text-gray-500">{item.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">{item.clients.toLocaleString('pt-BR')}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getErrorColor(errorPercentage)}`}>
-                        {errorPercentage.toFixed(2)}%
-                      </span>
-                    </td>
-                  </tr>
-                  {isExpanded && (
-                    <tr className="bg-gray-50">
-                      <td colSpan="4" className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center"><FileText size={16} className="mr-2" /> O que é esta tela?</h4>
-                                <p className="text-sm text-gray-600">{item.description}</p>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center"><TrendingDown size={16} className="mr-2" /> Análise e Hipóteses</h4>
-                                <p className="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg border border-yellow-200">{item.analysis}</p>
-                            </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
-const InsightsSection = () => {
-    return (
-        <div className="mt-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Conclusões e Insights Rápidos</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-800 mb-1 flex items-center"><LogOut size={20} className="mr-2 text-red-500"/>Maiores Pontos de Abandono</h3>
-                    <p className="text-sm text-gray-500 mb-4">Clientes perdidos entre etapas-chave da jornada.</p>
-                    <div className="w-full h-80">
-                        <ResponsiveContainer>
-                            <BarChart data={clientDropOffData} layout="vertical" margin={{ top: 5, right: 20, left: 120, bottom: 5 }}>
-                                <XAxis type="number" />
-                                <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-                                <Tooltip formatter={(value) => [`${value.toLocaleString('pt-BR')} clientes`, 'Queda']} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #ddd', borderRadius: '0.5rem' }}/>
-                                <Bar dataKey="value" radius={[0, 5, 5, 0]}>
-                                    {clientDropOffData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-800 mb-1 flex items-center"><AlertTriangle size={20} className="mr-2 text-yellow-500"/>Telas com Maior Volume de Erros</h3>
-                    <p className="text-sm text-gray-500 mb-4">Ranking de telas pelo número absoluto de erros gerados.</p>
-                     <div className="w-full h-80">
-                        <ResponsiveContainer>
-                            <BarChart data={topErrorVolumeData} layout="vertical" margin={{ top: 5, right: 20, left: 120, bottom: 5 }}>
-                                <XAxis type="number" />
-                                <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-                                <Tooltip formatter={(value) => [`${value.toLocaleString('pt-BR')} erros`, 'Total']} contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', border: '1px solid #ddd', borderRadius: '0.5rem' }}/>
-                                <Bar dataKey="value" fill="#f87171" radius={[0, 5, 5, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
-export default function App() {
-  const [selectedStage, setSelectedStage] = useState('Todas as Etapas');
-
-  const stages = ['Todas as Etapas', ...funnelData.map(f => f.stage)];
-
-  const filteredData = useMemo(() => {
-    if (selectedStage === 'Todas as Etapas') {
-      return screenData;
-    }
-    return screenData.filter(d => d.stage === selectedStage);
-  }, [selectedStage]);
-
-  const handleStageClick = (stage) => {
-    setSelectedStage(stage);
-  };
-
-  return (
-    <div className="bg-gray-50 min-h-screen font-sans p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Dashboard da Jornada de Investimentos</h1>
-          <p className="text-lg text-gray-600 mt-2">Análise interativa dos pontos de atrito e oportunidades no fluxo de investimentos do BB.</p>
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Dashboard da Jornada de Investimentos</h1>
+            <p class="text-lg text-gray-600 mt-2">Análise interativa dos pontos de atrito e oportunidades no fluxo de investimentos do BB.</p>
         </header>
 
-        <main className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="lg:col-span-1">
-            <FunnelChart onStageClick={handleStageClick} />
-          </div>
-          
-          <div className="lg:col-span-1">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Filtrar por Etapa do Funil</h3>
-              <div className="flex flex-wrap gap-2">
-                {stages.map(stage => (
-                  <button
-                    key={stage}
-                    onClick={() => setSelectedStage(stage)}
-                    className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-                      selectedStage === stage
-                        ? 'bg-blue-600 text-white shadow'
-                        : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'
-                    }`}
-                  >
-                    {stage}
-                  </button>
-                ))}
-              </div>
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Seção do Gráfico de Funil -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg border border-gray-200 h-full">
+                <h2 class="text-xl font-bold text-gray-800 mb-1">Funil da Jornada de Investimentos</h2>
+                <p class="text-sm text-gray-500 mb-4">Queda de clientes em cada etapa principal.</p>
+                <canvas id="funnelChart" class="w-full h-80"></canvas>
+                <div id="funnelLegend" class="mt-4 space-y-2"></div>
             </div>
-            <ScreenTable data={filteredData} />
-          </div>
+            
+            <!-- Seção da Tabela de Telas -->
+            <div class="lg:col-span-1">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Filtrar por Etapa do Funil</h3>
+                    <div id="filterButtons" class="flex flex-wrap gap-2">
+                        <!-- Botões de filtro serão inseridos aqui via JS -->
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-1">Análise Detalhada por Tela</h2>
+                    <p class="text-sm text-gray-500 mb-4">Clique em uma linha para ver a descrição e análise.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="w-10"></th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tela</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clientes</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% Erro</th>
+                                </tr>
+                            </thead>
+                            <tbody id="screenTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Linhas da tabela serão inseridas aqui via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
         
-        <InsightsSection />
+        <!-- Seção de Conclusões e Insights -->
+        <div class="mt-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">Conclusões e Insights Rápidos</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-800 mb-1 flex items-center"><i data-lucide="log-out" class="mr-2 text-red-500"></i>Maiores Pontos de Abandono</h3>
+                    <p class="text-sm text-gray-500 mb-4">Clientes perdidos entre etapas-chave da jornada.</p>
+                    <canvas id="dropOffChart" class="w-full h-80"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-800 mb-1 flex items-center"><i data-lucide="alert-triangle" class="mr-2 text-yellow-500"></i>Telas com Maior Volume de Erros</h3>
+                    <p class="text-sm text-gray-500 mb-4">Ranking de telas pelo número absoluto de erros gerados.</p>
+                    <canvas id="errorVolumeChart" class="w-full h-80"></canvas>
+                </div>
+            </div>
+        </div>
 
-        <footer className="text-center mt-12 text-gray-500 text-sm">
-          <p>Dados consolidados do período de 01/07/2025 a 24/07/2025.</p>
-          <p>Este dashboard é uma ferramenta de análise para identificar e discutir melhorias na experiência do usuário.</p>
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Dados consolidados do período de 01/07/2025 a 24/07/2025.</p>
+            <p>Este dashboard é uma ferramenta de análise para identificar e discutir melhorias na experiência do usuário.</p>
         </footer>
-      </div>
     </div>
-  );
-}
+
+    <script>
+        // Espera o DOM carregar completamente antes de executar o script
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- DADOS PROCESSADOS (Baseado nos arquivos CSV fornecidos) ---
+            const screenData = [
+                { id: 1, stage: '1. Descoberta', name: 'unidentifiedbusinessscreen', friendlyName: 'Botão de Acesso Rápido', accesses: 10767119, clients: 2048723, errors: 278003, icon: 'search', description: 'Principal ponto de entrada para a área de investimentos, localizado na tela inicial do app. É o primeiro contato da maioria dos clientes com a jornada.', analysis: 'O volume altíssimo de clientes (mais de 2 milhões) mostra que há um grande interesse inicial. No entanto, a taxa de erro de 2.58% já neste primeiro passo pode ser uma barreira inicial, frustrando o usuário antes mesmo de começar.' },
+                { id: 2, stage: '1. Descoberta', name: 'advisory', friendlyName: 'Tela de Orientação (Não Investidor)', accesses: 361336, clients: 148942, errors: 15801, icon: 'help-circle', description: 'Tela exibida para clientes que ainda não têm um histórico de investimentos. O objetivo é guiá-los, geralmente com mensagens como "Você escolhe como cuidar do seu dinheiro."', analysis: 'Uma taxa de erro de 4.37% em uma tela que deveria ser de ajuda é preocupante. A complexidade ou instabilidade aqui pode fazer com que o cliente se sinta perdido e desista prematuramente.' },
+                { id: 3, stage: '1. Descoberta', name: 'unificationchooseportfolioorsimulatorscene', friendlyName: 'Tela de Decisão: Simular ou Investir', accesses: 392246, clients: 137113, errors: 20444, icon: 'git-pull-request', description: 'Tela que força o usuário a escolher entre caminhos como "Quero investir em um objetivo" ou "Quero sugestões para investir", em vez de apresentar os produtos diretamente.', analysis: 'Outro ponto de atrito desnecessário. A taxa de erro de 5.21% e a natureza da tela (uma escolha forçada) adicionam complexidade e podem confundir o usuário, que só quer ver as opções de investimento.' },
+                { id: 4, stage: '2. Perfil de Investidor', name: 'surveyinitv2', friendlyName: 'Iniciar/Pular Questionário', accesses: 1004441, clients: 732882, errors: 13880, icon: 'edit', description: 'Tela onde o cliente decide se irá responder ao questionário de perfil de investidor (Suitability). É a porta de entrada para a etapa de maior abandono.', analysis: 'Este é o início do maior gargalo da jornada. Embora a tela em si tenha poucos erros, ela é a porta de entrada para a etapa com a maior taxa de abandono.' },
+                { id: 5, stage: '2. Perfil de Investidor', name: 'surveyquestionsv2', friendlyName: 'Perguntas do Questionário', accesses: 315897, clients: 254964, errors: 23362, icon: 'list', description: 'Tela onde o cliente efetivamente responde às perguntas para definir seu perfil de investidor.', analysis: 'A maior taxa de erro (7.39%) e a queda abrupta de 65% dos clientes (de 732k para 254k) confirmam que o questionário é a principal barreira. O processo é longo, obrigatório e instável, causando uma enorme perda de potenciais investidores.' },
+                { id: 6, stage: '3. Exploração de Produtos', name: 'investmentfunds', friendlyName: 'Hub de Fundos de Investimento', accesses: 1231170, clients: 286655, errors: 69107, icon: 'dollar-sign', description: 'Tela principal que lista os fundos de investimento disponíveis para aplicação.', analysis: 'A tela de produto mais acessada, mostrando grande interesse em Fundos. Contudo, a taxa de erro de 5.61% é alta para uma vitrine de produtos, podendo impedir o cliente de analisar as opções e prosseguir para a contratação.' },
+                { id: 7, stage: '3. Exploração de Produtos', name: 'aplicacaocdb-entrada', friendlyName: 'Entrada - CDB', accesses: 120469, clients: 57001, errors: 2216, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em CDB, onde o cliente informa o valor que deseja aplicar.', analysis: 'Ponto de partida para um dos produtos mais populares. A jornada é segmentada, o que pode aumentar o número de cliques e a chance de abandono.' },
+                { id: 8, stage: '4. Contratação', name: 'aplicacaocdb-listacdb', friendlyName: 'Contratação Final - CDB', accesses: 89286, clients: 46149, errors: 5614, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente escolhe o CDB específico (ex: "BB CDB DI - 1800 dias") e finaliza a contratação.', analysis: 'CRÍTICO: Uma taxa de erro de 6.29% na tela de conversão final é alarmante. O cliente superou todas as barreiras, decidiu investir e o sistema falha. Isso gera frustração máxima e perda de confiança e receita.' },
+                { id: 9, stage: '3. Exploração de Produtos', name: 'aplicacaolca-entrada', friendlyName: 'Entrada - LCA', accesses: 112104, clients: 54721, errors: 1729, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em LCA, onde o cliente informa o valor que deseja aplicar.', analysis: 'Comportamento similar ao CDB, com uma jornada de exploração que antecede a contratação.' },
+                { id: 10, stage: '4. Contratação', name: 'aplicacaolca-listalca', friendlyName: 'Contratação Final - LCA', accesses: 22534, clients: 15306, errors: 541, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente finaliza a contratação de LCA.', analysis: 'A taxa de erro de 2.4% é menor que a do CDB, mas ainda assim preocupante para uma tela final. Cada erro aqui é uma conversão perdida.' },
+                { id: 11, stage: '3. Exploração de Produtos', name: 'aplicacaolci-entrada', friendlyName: 'Entrada - LCI', accesses: 34338, clients: 21396, errors: 512, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em LCI, onde o cliente informa o valor que deseja aplicar.', analysis: 'Menor volume de entrada comparado a CDB e LCA, mas segue o mesmo padrão de fluxo segmentado.' },
+                { id: 12, stage: '4. Contratação', name: 'aplicacaolci-listalci', friendlyName: 'Contratação Final - LCI', accesses: 84753, clients: 46820, errors: 1251, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente finaliza a contratação de LCI.', analysis: 'A taxa de erro aqui é baixa (1.48%), mas o número de acessos ser maior que a tela de entrada é estranho. Pode indicar que usuários estão recarregando a página por algum motivo, talvez por lentidão ou erro não capturado.' },
+            ];
+
+            const funnelData = [
+                { stage: '1. Descoberta', value: 2048723, color: '#3b82f6' },
+                { stage: '2. Perfil de Investidor', value: 732882, color: '#f97316' },
+                { stage: '3. Exploração de Produtos', value: 286655, color: '#22c55e' },
+                { stage: '4. Contratação', value: 61455, color: '#ef4444' },
+            ];
+
+            // --- ESTADO DA APLICAÇÃO ---
+            let currentFilter = 'Todas as Etapas';
+            let expandedRow = null;
+
+            // --- FUNÇÕES DE RENDERIZAÇÃO ---
+
+            // Renderiza a tabela de telas
+            const renderTable = () => {
+                const tableBody = document.getElementById('screenTableBody');
+                tableBody.innerHTML = ''; // Limpa a tabela antes de renderizar
+
+                const filteredData = currentFilter === 'Todas as Etapas'
+                    ? screenData
+                    : screenData.filter(d => d.stage === currentFilter);
+
+                filteredData.forEach(item => {
+                    const errorPercentage = (item.errors / item.accesses) * 100;
+                    const isExpanded = expandedRow === item.id;
+
+                    // Cor da tag de erro
+                    let errorColorClass = 'bg-green-200 text-green-800';
+                    if (errorPercentage >= 7) errorColorClass = 'bg-red-200 text-red-800';
+                    else if (errorPercentage >= 4) errorColorClass = 'bg-yellow-200 text-yellow-800';
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-100 cursor-pointer';
+                    row.innerHTML = `
+                        <td class="px-4 py-4"><i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}"></i></td>
+                        <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-gray-100 rounded-lg mr-3">
+                                    <i data-lucide="${item.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">${item.friendlyName}</div>
+                                    <div class="text-xs text-gray-500">${item.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">${item.clients.toLocaleString('pt-BR')}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${errorColorClass}">
+                                ${errorPercentage.toFixed(2)}%
+                            </span>
+                        </td>
+                    `;
+                    row.addEventListener('click', () => {
+                        expandedRow = expandedRow === item.id ? null : item.id;
+                        renderTable(); // Re-renderiza a tabela para mostrar/ocultar detalhes
+                    });
+                    tableBody.appendChild(row);
+
+                    if (isExpanded) {
+                        const detailsRow = document.createElement('tr');
+                        detailsRow.className = 'bg-gray-50 details-row';
+                        detailsRow.innerHTML = `
+                            <td colspan="4" class="p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-2"></i> O que é esta tela?</h4>
+                                        <p class="text-sm text-gray-600">${item.description}</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-800 mb-2 flex items-center"><i data-lucide="trending-down" class="w-4 h-4 mr-2"></i> Análise e Hipóteses</h4>
+                                        <p class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg border border-yellow-200">${item.analysis}</p>
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(detailsRow);
+                    }
+                });
+                lucide.createIcons(); // Atualiza os ícones
+            };
+
+            // Renderiza os botões de filtro
+            const renderFilters = () => {
+                const filterContainer = document.getElementById('filterButtons');
+                const stages = ['Todas as Etapas', ...new Set(screenData.map(d => d.stage))];
+                
+                stages.forEach(stage => {
+                    const button = document.createElement('button');
+                    button.textContent = stage;
+                    button.className = `px-4 py-2 text-sm font-medium rounded-full transition-colors ${
+                        currentFilter === stage
+                        ? 'bg-blue-600 text-white shadow'
+                        : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'
+                    }`;
+                    button.addEventListener('click', () => {
+                        currentFilter = stage;
+                        expandedRow = null; // Reseta a linha expandida ao filtrar
+                        renderFilters();
+                        renderTable();
+                    });
+                    filterContainer.appendChild(button);
+                });
+            };
+
+            // Renderiza a legenda do funil
+            const renderFunnelLegend = () => {
+                const legendContainer = document.getElementById('funnelLegend');
+                legendContainer.innerHTML = '';
+                funnelData.forEach((item, index) => {
+                    const nextValue = funnelData[index + 1] ? funnelData[index + 1].value : 0;
+                    const dropOff = nextValue > 0 ? ((item.value - nextValue) / item.value) * 100 : 0;
+                    
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-gray-50';
+                    legendItem.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="w-4 h-4 rounded-full mr-3" style="background-color: ${item.color}"></span>
+                            <span class="font-semibold text-gray-700">${item.stage}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-gray-800">${item.value.toLocaleString('pt-BR')}</span>
+                            ${index < funnelData.length - 1 ? `
+                            <span class="text-xs text-red-500 ml-2 flex items-center justify-end">
+                                <i data-lucide="trending-down" class="w-3 h-3 mr-1"></i>
+                                Queda de ${dropOff.toFixed(1)}%
+                            </span>` : ''}
+                        </div>
+                    `;
+                    legendContainer.appendChild(legendItem);
+                });
+            };
+
+            // --- INICIALIZAÇÃO DOS GRÁFICOS ---
+            
+            // Gráfico de Funil
+            new Chart(document.getElementById('funnelChart'), {
+                type: 'bar',
+                data: {
+                    labels: funnelData.map(d => d.stage),
+                    datasets: [{
+                        label: 'Clientes',
+                        data: funnelData.map(d => d.value),
+                        backgroundColor: funnelData.map(d => d.color),
+                        borderRadius: { topRight: 5, bottomRight: 5 },
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${context.raw.toLocaleString('pt-BR')}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+
+            // Gráfico de Pontos de Abandono
+            const clientDropOffData = [
+                { name: 'Início do Questionário -> Perguntas', value: screenData.find(s => s.name === 'surveyinitv2').clients - screenData.find(s => s.name === 'surveyquestionsv2').clients, color: '#ef4444' },
+                { name: 'Descoberta -> Perfil', value: funnelData[0].value - funnelData[1].value, color: '#f97316' },
+                { name: 'Perfil -> Exploração', value: funnelData[1].value - funnelData[2].value, color: '#eab308' },
+            ].sort((a,b) => b.value - a.value);
+
+            new Chart(document.getElementById('dropOffChart'), {
+                type: 'bar',
+                data: {
+                    labels: clientDropOffData.map(d => d.name),
+                    datasets: [{
+                        label: 'Clientes Perdidos',
+                        data: clientDropOffData.map(d => d.value),
+                        backgroundColor: clientDropOffData.map(d => d.color),
+                        borderRadius: { topRight: 5, bottomRight: 5 },
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                }
+            });
+
+            // Gráfico de Volume de Erros
+            const topErrorVolumeData = [...screenData].sort((a, b) => b.errors - a.errors).slice(0, 5);
+            new Chart(document.getElementById('errorVolumeChart'), {
+                type: 'bar',
+                data: {
+                    labels: topErrorVolumeData.map(d => d.friendlyName),
+                    datasets: [{
+                        label: 'Nº de Erros',
+                        data: topErrorVolumeData.map(d => d.errors),
+                        backgroundColor: '#f87171',
+                        borderRadius: { topRight: 5, bottomRight: 5 },
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                }
+            });
+
+
+            // --- INICIALIZAÇÃO DA PÁGINA ---
+            renderFilters();
+            renderTable();
+            renderFunnelLegend();
+            lucide.createIcons(); // Renderiza todos os ícones na carga inicial
+        });
+    </script>
+</body>
+</html>
