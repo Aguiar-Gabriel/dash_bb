@@ -8,6 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons para os ícones -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Mermaid.js para o fluxograma -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
+    <!-- Chart.js e a extensão Treemap -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.0.1/dist/chartjs-chart-treemap.min.js"></script>
     <style>
         /* Estilo para garantir que a fonte Inter seja aplicada */
         body {
@@ -26,14 +31,64 @@
     <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <header class="mb-8">
             <h1 class="text-4xl font-bold text-gray-900">Dashboard da Jornada de Investimentos</h1>
-            <p class="text-lg text-gray-600 mt-2">Análise numérica e explicada dos pontos de atrito no fluxo de investimentos do BB.</p>
+            <p class="text-lg text-gray-600 mt-2">Análise visual e explicada dos pontos de atrito no fluxo de investimentos do BB.</p>
         </header>
 
-        <!-- Seção de Insights Numéricos -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Principais Indicadores da Jornada</h2>
-            <div id="keyInsights" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Cards de insights serão inseridos aqui via JS -->
+        <!-- Seção do Fluxograma e Mapa de Erros -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+            <!-- Card do Fluxograma -->
+            <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
+                    <i data-lucide="git-merge" class="mr-2"></i>Fluxograma Detalhado da Jornada
+                </h2>
+                <p class="text-sm text-gray-600 mb-4">O diagrama agora mostra dois fluxos: o do <b>novo investidor</b> (que passa pelo questionário) e o do <b>investidor atual</b> (que vai direto para os produtos).</p>
+                <!-- O Mermaid vai renderizar o gráfico aqui -->
+                <div class="mermaid flex justify-center">
+graph TD
+    A["Acesso Rápido<br>2.048.723 Clientes"] --> DEC{"Possui Questionário<br>Válido?"};
+
+    subgraph "Fluxo Novo Investidor (ou Questionário Vencido)"
+        DEC -->|Não| B["Iniciar Questionário<br>732.882 Clientes"];
+        B --> C["Responde Perguntas<br>254.964 Clientes"];
+        B -->|"Abandono de 65%"| OUT2["Saída<br>477.918 Clientes"];
+    end
+
+    subgraph "Fluxo Investidor Atual"
+         DEC -->|Sim| OUT1["Atalho para o Hub<br>1.315.841 Clientes"];
+    end
+    
+    C --> D{Hub de Produtos};
+    OUT1 --> D;
+
+    subgraph "Exploração e Contratação"
+        D --> E["Fundos<br>286.655 Clientes"];
+        D --> F["Entrada CDB<br>57.001 Clientes"];
+        F -->|"Queda de 19%"| I["Contratação CDB<br>46.149 Clientes"];
+        D --> G["Entrada LCA<br>54.721 Clientes"];
+        G -->|"Queda de 72%"| J["Contratação LCA<br>15.306 Clientes"];
+        D --> H["Entrada LCI<br>21.396 Clientes"];
+        H -->|"Anomalia (+119%)"| K["Contratação LCI<br>46.820 Clientes"];
+    end
+
+    style A fill:#e0f2fe,stroke:#0284c7,stroke-width:2px
+    style DEC fill:#f3f4f6,stroke:#6b7280,stroke-width:2px
+    style B,C fill:#fff7ed,stroke:#f97316,stroke-width:2px
+    style D fill:#e0f2fe,stroke:#0284c7,stroke-width:2px
+    style E,F,G,H fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+    style I,J,K fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style OUT1 fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style OUT2 fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+                </div>
+            </div>
+            <!-- Card do Mapa de Erros -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
+                    <i data-lucide="alert-octagon" class="mr-2"></i>Mapa de Calor de Erros
+                </h2>
+                <p class="text-sm text-gray-600 mb-4">A área de cada retângulo é proporcional ao volume total de erros gerados pela tela.</p>
+                <div class="w-full h-80">
+                    <canvas id="treemap-chart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -74,6 +129,9 @@
         // Espera o DOM carregar completamente antes de executar o script
         document.addEventListener('DOMContentLoaded', () => {
             
+            // Inicializa o Mermaid.js
+            mermaid.initialize({ startOnLoad: true, theme: 'base' });
+
             // --- DADOS PROCESSADOS ---
             const screenData = [
                 { id: 1, stage: '1. Descoberta', name: 'unidentifiedbusinessscreen', friendlyName: 'Botão de Acesso Rápido', accesses: 10767119, clients: 2048723, errors: 278003, icon: 'search', description: 'Principal ponto de entrada para a área de investimentos, localizado na tela inicial do app. É o primeiro contato da maioria dos clientes com a jornada.', analysis: 'O volume altíssimo de clientes (mais de 2 milhões) mostra que há um grande interesse inicial. No entanto, a taxa de erro de 2.58% já neste primeiro passo pode ser uma barreira inicial, frustrando o usuário antes mesmo de começar.' },
@@ -95,60 +153,6 @@
             let expandedRow = null;
 
             // --- FUNÇÕES DE RENDERIZAÇÃO ---
-
-            const renderKeyInsights = () => {
-                const container = document.getElementById('keyInsights');
-                
-                const totalClientsStart = screenData.find(s => s.id === 1).clients;
-                const clientsAtSurveyInit = screenData.find(s => s.name === 'surveyinitv2').clients;
-                const clientsAtSurveyQuestions = screenData.find(s => s.name === 'surveyquestionsv2').clients;
-                const dropOffAtSurvey = clientsAtSurveyInit - clientsAtSurveyQuestions;
-                const dropOffPercentage = (dropOffAtSurvey / clientsAtSurveyInit * 100).toFixed(1);
-
-                const mostCriticalScreen = screenData.reduce((prev, current) => {
-                    const prevErrorRate = (prev.errors / prev.accesses);
-                    const currentErrorRate = (current.errors / current.accesses);
-                    return (prevErrorRate > currentErrorRate) ? prev : current;
-                });
-                const mostCriticalErrorRate = (mostCriticalScreen.errors / mostCriticalScreen.accesses * 100).toFixed(2);
-
-                const insights = [
-                    {
-                        icon: 'users',
-                        title: 'Início da Jornada',
-                        value: `${(totalClientsStart / 1_000_000).toFixed(2)} Milhões`,
-                        description: 'de clientes acessaram a área de investimentos.',
-                        color: 'blue'
-                    },
-                    {
-                        icon: 'trending-down',
-                        title: 'Principal Ponto de Queda',
-                        value: `~${dropOffPercentage}%`,
-                        description: `dos clientes desistem ao iniciar o Questionário de Perfil.`,
-                        color: 'orange'
-                    },
-                    {
-                        icon: 'alert-triangle',
-                        title: 'Tela Mais Crítica',
-                        value: `${mostCriticalErrorRate}% de Erro`,
-                        description: `na tela "${mostCriticalScreen.friendlyName}", a maior taxa do fluxo.`,
-                        color: 'red'
-                    }
-                ];
-
-                container.innerHTML = insights.map(insight => `
-                    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200 flex items-start space-x-4">
-                        <div class="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-lg bg-${insight.color}-100 text-${insight.color}-600">
-                            <i data-lucide="${insight.icon}"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">${insight.title}</p>
-                            <p class="text-2xl font-bold text-gray-900">${insight.value}</p>
-                            <p class="text-sm text-gray-600">${insight.description}</p>
-                        </div>
-                    </div>
-                `).join('');
-            };
 
             const renderTable = () => {
                 const tableBody = document.getElementById('screenTableBody');
@@ -220,14 +224,14 @@
             const renderFilters = () => {
                 const filterContainer = document.getElementById('filterButtons');
                 filterContainer.innerHTML = ''; 
-                const stages = ['Todas as Etapas', ...new Set(screenData.map(d => d.stage))];
+                const stages = ['Todas as Etapas', '1. Descoberta', '2. Perfil de Investidor', '3. Exploração de Produtos', '4. Contratação'];
                 
                 stages.forEach(stage => {
                     const button = document.createElement('button');
                     button.textContent = stage;
                     button.className = `px-4 py-2 text-sm font-medium rounded-full transition-colors ${
                         currentFilter === stage
-                        ? 'bg-blue-600 text-white shadow'
+                        ? 'bg-blue-800 text-white shadow'
                         : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'
                     }`;
                     button.addEventListener('click', () => {
@@ -240,8 +244,85 @@
                 });
             };
 
+            const renderTreemap = () => {
+                const ctx = document.getElementById('treemap-chart').getContext('2d');
+                const errorData = screenData
+                    .filter(d => d.errors > 0)
+                    .map(d => ({
+                        name: d.friendlyName,
+                        value: d.errors,
+                        rate: (d.errors / d.accesses * 100).toFixed(2)
+                    }));
+                
+                // Paleta de cores do Banco do Brasil
+                const bbBlue = '#0033a0';
+                const bbYellow = '#fde500';
+                const bbLightBlue = '#0059a8';
+                const bbDarkBlue = '#002169';
+
+                new Chart(ctx, {
+                    type: 'treemap',
+                    data: {
+                        datasets: [{
+                            label: 'Volume de Erros',
+                            tree: errorData,
+                            key: 'value',
+                            groups: ['name'],
+                            backgroundColor: (context) => {
+                                if (context.type !== 'data') return 'transparent';
+                                const value = context.raw.v;
+                                if (value > 200000) return bbDarkBlue;
+                                if (value > 50000) return bbBlue;
+                                if (value > 10000) return bbLightBlue;
+                                return bbYellow;
+                            },
+                            borderColor: 'white',
+                            borderWidth: 2,
+                            spacing: 2,
+                            labels: {
+                                display: true,
+                                color: (context) => {
+                                    if (context.type !== 'data') return 'transparent';
+                                    const value = context.raw.v;
+                                    // Texto preto para o amarelo, branco para os azuis
+                                    return value > 10000 ? 'white' : 'black';
+                                },
+                                font: {
+                                    size: 12,
+                                    weight: 'bold',
+                                },
+                                position: 'center',
+                                formatter: (context) => {
+                                    if (context.type !== 'data') return;
+                                    const item = context.raw._data;
+                                    // Mostra o nome apenas se houver espaço
+                                    if (context.raw.w < 50 || context.raw.h < 30) return null;
+                                    return [item.name, `${item.value.toLocaleString('pt-BR')} erros`];
+                                }
+                            }
+                        }],
+                    },
+                    options: {
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: (context) => context[0].raw._data.name,
+                                    label: (context) => [
+                                        `Volume de Erros: ${context.raw.v.toLocaleString('pt-BR')}`,
+                                        `Taxa de Erro: ${context.raw._data.rate}%`
+                                    ]
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            };
+
             // --- INICIALIZAÇÃO DA PÁGINA ---
-            renderKeyInsights();
+            renderTreemap();
             renderFilters();
             renderTable();
             lucide.createIcons(); // Renderiza todos os ícones na carga inicial
