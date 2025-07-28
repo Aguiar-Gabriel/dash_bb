@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Jornada de Investimentos BB</title>
+    <title>Dashboard | Análise de Funis de Investimento BB</title>
     <!-- Tailwind CSS para estilização rápida -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons para os ícones -->
@@ -30,19 +30,17 @@
 
     <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <header class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Dashboard da Jornada de Investimentos</h1>
-            <p class="text-lg text-gray-600 mt-2">Análise visual e explicada dos pontos de atrito no fluxo de investimentos do BB.</p>
+            <h1 class="text-4xl font-bold text-gray-900">Dashboard de Análise de Funis</h1>
+            <p class="text-lg text-gray-600 mt-2">Análise da jornada completa e funis de contratação para cada produto de investimento.</p>
         </header>
 
-        <!-- Seção do Fluxograma e Mapa de Erros -->
+        <!-- Seção do Fluxograma Principal e Mapa de Erros -->
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
-            <!-- Card do Fluxograma -->
             <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                 <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
-                    <i data-lucide="git-merge" class="mr-2"></i>Fluxograma Detalhado da Jornada
+                    <i data-lucide="git-merge" class="mr-2"></i>Jornada Geral do Investidor
                 </h2>
-                <p class="text-sm text-gray-600 mb-4">O diagrama agora mostra dois fluxos: o do <b>novo investidor</b> (que passa pelo questionário) e o do <b>investidor atual</b> (que vai direto para os produtos).</p>
-                <!-- O Mermaid vai renderizar o gráfico aqui -->
+                <p class="text-sm text-gray-600 mb-4">Visão macro dos dois principais fluxos: o do <b>novo investidor</b> (com questionário) e o do <b>investidor atual</b> (atalho).</p>
                 <div class="mermaid flex justify-center">
 graph TD
     A["Acesso Rápido<br>2.048.723 Clientes"] --> DEC{"Possui Questionário<br>Válido?"};
@@ -54,33 +52,20 @@ graph TD
     end
 
     subgraph "Fluxo Investidor Atual"
-         DEC -->|Sim| OUT1["Atalho para o Hub<br>1.315.841 Clientes"];
+         DEC -->|Sim| OUT1["Atalho para Hub<br>1.315.841 Clientes"];
     end
     
-    C --> D{Hub de Produtos};
+    C --> D["Hub de Produtos<br>(Tela 'Novo Investimento')<br>552.970 Clientes"];
     OUT1 --> D;
-
-    subgraph "Exploração e Contratação"
-        D --> E["Fundos<br>286.655 Clientes"];
-        D --> F["Entrada CDB<br>57.001 Clientes"];
-        F -->|"Queda de 19%"| I["Contratação CDB<br>46.149 Clientes"];
-        D --> G["Entrada LCA<br>54.721 Clientes"];
-        G -->|"Queda de 72%"| J["Contratação LCA<br>15.306 Clientes"];
-        D --> H["Entrada LCI<br>21.396 Clientes"];
-        H -->|"Anomalia (+119%)"| K["Contratação LCI<br>46.820 Clientes"];
-    end
 
     style A fill:#e0f2fe,stroke:#0284c7,stroke-width:2px
     style DEC fill:#f3f4f6,stroke:#6b7280,stroke-width:2px
     style B,C fill:#fff7ed,stroke:#f97316,stroke-width:2px
-    style D fill:#e0f2fe,stroke:#0284c7,stroke-width:2px
-    style E,F,G,H fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
-    style I,J,K fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style D fill:#dcfce7,stroke:#16a34a,stroke-width:2px
     style OUT1 fill:#dcfce7,stroke:#16a34a,stroke-width:2px
     style OUT2 fill:#fee2e2,stroke:#dc2626,stroke-width:2px
                 </div>
             </div>
-            <!-- Card do Mapa de Erros -->
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
                 <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
                     <i data-lucide="alert-octagon" class="mr-2"></i>Mapa de Calor de Erros
@@ -92,13 +77,61 @@ graph TD
             </div>
         </div>
 
+        <!-- Seção dos Funis por Produto -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Funis de Contratação por Produto</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Funil Fundos -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="font-bold text-lg text-center text-gray-800 mb-2">Fundos</h3>
+                    <div class="mermaid">
+graph TD
+    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 45.2%"| B["Tela de Fundos<br>302.743 Clientes"]
+    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style B fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                    </div>
+                </div>
+                <!-- Funil CDB -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="font-bold text-lg text-center text-gray-800 mb-2">CDB</h3>
+                    <div class="mermaid">
+graph TD
+    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 62.4%"| B["Entrada CDB<br>207.694 Clientes"]
+    B -->|"Queda de 27.4%"| C["Contratação CDB<br>150.707 Clientes"]
+    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                    </div>
+                </div>
+                <!-- Funil LCA -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="font-bold text-lg text-center text-gray-800 mb-2">LCA</h3>
+                    <div class="mermaid">
+graph TD
+    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 79.4%"| B["Entrada LCA<br>113.927 Clientes"]
+    B -->|"Queda de 29.1%"| C["Contratação LCA<br>80.767 Clientes"]
+    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                    </div>
+                </div>
+                <!-- Funil LCI -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="font-bold text-lg text-center text-gray-800 mb-2">LCI</h3>
+                    <div class="mermaid">
+graph TD
+    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 86.5%"| B["Entrada LCI<br>74.493 Clientes"]
+    B -->|"Queda de 33.5%"| C["Contratação LCI<br>49.505 Clientes"]
+    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    style B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Seção da Tabela de Telas -->
         <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
              <div class="mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 mb-2">Filtrar por Etapa do Funil</h3>
-                <div id="filterButtons" class="flex flex-wrap gap-2">
-                    <!-- Botões de filtro serão inseridos aqui via JS -->
-                </div>
+                <div id="filterButtons" class="flex flex-wrap gap-2"></div>
             </div>
             <h2 class="text-xl font-bold text-gray-800 mt-6 mb-1">Análise Detalhada por Tela</h2>
             <p class="text-sm text-gray-500 mb-4">Clique em uma linha para ver a descrição e análise.</p>
@@ -112,9 +145,7 @@ graph TD
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% Erro</th>
                         </tr>
                     </thead>
-                    <tbody id="screenTableBody" class="bg-white divide-y divide-gray-200">
-                        <!-- Linhas da tabela serão inseridas aqui via JS -->
-                    </tbody>
+                    <tbody id="screenTableBody" class="bg-white divide-y divide-gray-200"></tbody>
                 </table>
             </div>
         </div>
@@ -126,33 +157,28 @@ graph TD
     </div>
 
     <script>
-        // Espera o DOM carregar completamente antes de executar o script
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // Inicializa o Mermaid.js
             mermaid.initialize({ startOnLoad: true, theme: 'base' });
 
-            // --- DADOS PROCESSADOS ---
             const screenData = [
-                { id: 1, stage: '1. Descoberta', name: 'unidentifiedbusinessscreen', friendlyName: 'Botão de Acesso Rápido', accesses: 10767119, clients: 2048723, errors: 278003, icon: 'search', description: 'Principal ponto de entrada para a área de investimentos, localizado na tela inicial do app. É o primeiro contato da maioria dos clientes com a jornada.', analysis: 'O volume altíssimo de clientes (mais de 2 milhões) mostra que há um grande interesse inicial. No entanto, a taxa de erro de 2.58% já neste primeiro passo pode ser uma barreira inicial, frustrando o usuário antes mesmo de começar.' },
-                { id: 2, stage: '1. Descoberta', name: 'advisory', friendlyName: 'Tela de Orientação (Não Investidor)', accesses: 361336, clients: 148942, errors: 15801, icon: 'help-circle', description: 'Tela exibida para clientes que ainda não têm um histórico de investimentos. O objetivo é guiá-los, geralmente com mensagens como "Você escolhe como cuidar do seu dinheiro."', analysis: 'Uma taxa de erro de 4.37% em uma tela que deveria ser de ajuda é preocupante. A complexidade ou instabilidade aqui pode fazer com que o cliente se sinta perdido e desista prematuramente.' },
-                { id: 3, stage: '1. Descoberta', name: 'unificationchooseportfolioorsimulatorscene', friendlyName: 'Tela de Decisão: Simular ou Investir', accesses: 392246, clients: 137113, errors: 20444, icon: 'git-pull-request', description: 'Tela que força o usuário a escolher entre caminhos como "Quero investir em um objetivo" ou "Quero sugestões para investir", em vez de apresentar os produtos diretamente.', analysis: 'Outro ponto de atrito desnecessário. A taxa de erro de 5.21% e a natureza da tela (uma escolha forçada) adicionam complexidade e podem confundir o usuário, que só quer ver as opções de investimento.' },
-                { id: 4, stage: '2. Perfil de Investidor', name: 'surveyinitv2', friendlyName: 'Iniciar/Pular Questionário', accesses: 1004441, clients: 732882, errors: 13880, icon: 'edit', description: 'Tela onde o cliente decide se irá responder ao questionário de perfil de investidor (Suitability). É a porta de entrada para a etapa de maior abandono.', analysis: 'Este é o início do maior gargalo da jornada. Embora a tela em si tenha poucos erros, ela é a porta de entrada para a etapa com a maior taxa de abandono.' },
-                { id: 5, stage: '2. Perfil de Investidor', name: 'surveyquestionsv2', friendlyName: 'Perguntas do Questionário', accesses: 315897, clients: 254964, errors: 23362, icon: 'list', description: 'Tela onde o cliente efetivamente responde às perguntas para definir seu perfil de investidor.', analysis: 'A maior taxa de erro (7.39%) e a queda abrupta de 65% dos clientes (de 732k para 254k) confirmam que o questionário é a principal barreira. O processo é longo, obrigatório e instável, causando uma enorme perda de potenciais investidores.' },
-                { id: 6, stage: '3. Exploração de Produtos', name: 'investmentfunds', friendlyName: 'Hub de Fundos de Investimento', accesses: 1231170, clients: 286655, errors: 69107, icon: 'dollar-sign', description: 'Tela principal que lista os fundos de investimento disponíveis para aplicação.', analysis: 'A tela de produto mais acessada, mostrando grande interesse em Fundos. Contudo, a taxa de erro de 5.61% é alta para uma vitrine de produtos, podendo impedir o cliente de analisar as opções e prosseguir para a contratação.' },
-                { id: 7, stage: '3. Exploração de Produtos', name: 'aplicacaocdb-entrada', friendlyName: 'Entrada - CDB', accesses: 120469, clients: 57001, errors: 2216, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em CDB, onde o cliente informa o valor que deseja aplicar.', analysis: 'Ponto de partida para um dos produtos mais populares. A jornada é segmentada, o que pode aumentar o número de cliques e a chance de abandono.' },
-                { id: 8, stage: '4. Contratação', name: 'aplicacaocdb-listacdb', friendlyName: 'Contratação Final - CDB', accesses: 89286, clients: 46149, errors: 5614, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente escolhe o CDB específico (ex: "BB CDB DI - 1800 dias") e finaliza a contratação.', analysis: 'CRÍTICO: Uma taxa de erro de 6.29% na tela de conversão final é alarmante. O cliente superou todas as barreiras, decidiu investir e o sistema falha. Isso gera frustração máxima e perda de confiança e receita.' },
-                { id: 9, stage: '3. Exploração de Produtos', name: 'aplicacaolca-entrada', friendlyName: 'Entrada - LCA', accesses: 112104, clients: 54721, errors: 1729, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em LCA, onde o cliente informa o valor que deseja aplicar.', analysis: 'Comportamento similar ao CDB, com uma jornada de exploração que antecede a contratação.' },
-                { id: 10, stage: '4. Contratação', name: 'aplicacaolca-listalca', friendlyName: 'Contratação Final - LCA', accesses: 22534, clients: 15306, errors: 541, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente finaliza a contratação de LCA.', analysis: 'A taxa de erro de 2.4% é menor que a do CDB, mas ainda assim preocupante para uma tela final. Cada erro aqui é uma conversão perdida.' },
-                { id: 11, stage: '3. Exploração de Produtos', name: 'aplicacaolci-entrada', friendlyName: 'Entrada - LCI', accesses: 34338, clients: 21396, errors: 512, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em LCI, onde o cliente informa o valor que deseja aplicar.', analysis: 'Menor volume de entrada comparado a CDB e LCA, mas segue o mesmo padrão de fluxo segmentado.' },
-                { id: 12, stage: '4. Contratação', name: 'aplicacaolci-listalci', friendlyName: 'Contratação Final - LCI', accesses: 84753, clients: 46820, errors: 1251, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente finaliza a contratação de LCI.', analysis: 'A taxa de erro aqui é baixa (1.48%), mas o número de acessos ser maior que a tela de entrada é estranho. Pode indicar que usuários estão recarregando a página por algum motivo, talvez por lentidão ou erro não capturado.' },
+                // Dados da Jornada Geral
+                { id: 1, stage: '1. Descoberta', name: 'unidentifiedbusinessscreen', friendlyName: 'Botão de Acesso Rápido', accesses: 10767119, clients: 2048723, errors: 278003, icon: 'search', description: 'Principal ponto de entrada para a área de investimentos, localizado na tela inicial do app.', analysis: 'Alto volume de clientes demonstra grande interesse inicial. A taxa de erro de 2.58% já é um ponto de atrito.' },
+                { id: 4, stage: '2. Perfil de Investidor', name: 'surveyinitv2', friendlyName: 'Iniciar/Pular Questionário', accesses: 1004441, clients: 732882, errors: 13880, icon: 'edit', description: 'Tela onde o cliente decide se irá responder ao questionário de perfil (Suitability).', analysis: 'Início do maior gargalo da jornada. A queda de 65% dos clientes que não prosseguem para as perguntas é o ponto mais crítico de abandono.' },
+                { id: 5, stage: '2. Perfil de Investidor', name: 'surveyquestionsv2', friendlyName: 'Perguntas do Questionário', accesses: 315897, clients: 254964, errors: 23362, icon: 'list', description: 'Tela onde o cliente efetivamente responde às perguntas para definir seu perfil.', analysis: 'A maior taxa de erro do fluxo (7.39%) ocorre aqui. O processo, além de longo, é tecnicamente instável.' },
+                
+                // Dados do Hub e Funis de Produtos (dos novos arquivos)
+                { id: 100, stage: '3. Exploração de Produtos', name: 'apply', friendlyName: 'Hub de Produtos (Novo Investimento)', accesses: 2206205, clients: 552970, errors: 97799, icon: 'layout-grid', description: 'Tela central que serve como vitrine para todos os produtos de investimento.', analysis: 'Ponto de partida para todas as contratações. O alto volume de erros (4.43%) aqui afeta todas as jornadas subsequentes.' },
+                { id: 101, stage: '3. Exploração de Produtos', name: 'investmentfunds', friendlyName: 'Tela de Fundos', accesses: 1333596, clients: 302743, errors: 74920, icon: 'dollar-sign', description: 'Listagem e detalhes dos Fundos de Investimento.', analysis: 'Produto mais explorado. A taxa de erro de 5.62% pode impedir a análise e contratação.' },
+                { id: 102, stage: '3. Exploração de Produtos', name: 'aplicacaocdb-entrada', friendlyName: 'Entrada - CDB', accesses: 565908, clients: 207694, errors: 13038, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em CDB, onde o cliente informa o valor.', analysis: 'A queda de 62.4% dos clientes do Hub para esta tela é muito alta, sugerindo que a oferta de CDB pode não ser clara ou atrativa.' },
+                { id: 103, stage: '4. Contratação', name: 'aplicacaocdb-listacdb', friendlyName: 'Contratação Final - CDB', accesses: 385680, clients: 150707, errors: 44820, icon: 'check-circle', description: 'Última tela do fluxo, onde o cliente escolhe o CDB específico e finaliza.', analysis: 'Taxa de erro altíssima de 11.62% no momento da conversão. É um ponto crítico que gera frustração e perda de receita.' },
+                { id: 104, stage: '3. Exploração de Produtos', name: 'aplicacaolca-entrada', friendlyName: 'Entrada - LCA', accesses: 404899, clients: 113927, errors: 5943, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em LCA.', analysis: 'A maior queda inicial entre os produtos de renda fixa (79.4%), indicando baixa atratividade ou visibilidade.' },
+                { id: 105, stage: '4. Contratação', name: 'aplicacaolca-listalca', friendlyName: 'Contratação Final - LCA', accesses: 259661, clients: 80767, errors: 39396, icon: 'check-circle', description: 'Última tela do fluxo para contratar LCA.', analysis: 'Taxa de erro alarmante de 15.17%, a maior entre todas as telas de contratação. Requer investigação técnica urgente.' },
+                { id: 106, stage: '3. Exploração de Produtos', name: 'aplicacaolci-entrada', friendlyName: 'Entrada - LCI', accesses: 183932, clients: 74493, errors: 2862, icon: 'dollar-sign', description: 'Primeira tela da jornada de aplicação em LCI.', analysis: 'Menor produto explorado, com uma queda inicial de 86.5% a partir do Hub.' },
+                { id: 107, stage: '4. Contratação', name: 'aplicacaolci-listalci', friendlyName: 'Contratação Final - LCI', accesses: 91020, clients: 49505, errors: 1346, icon: 'check-circle', description: 'Última tela do fluxo para contratar LCI.', analysis: 'A taxa de erro é baixa (1.48%), mas a conversão da etapa anterior é a pior (queda de 33.5%).' },
             ];
 
-            // --- ESTADO DA APLICAÇÃO ---
             let currentFilter = 'Todas as Etapas';
             let expandedRow = null;
-
-            // --- FUNÇÕES DE RENDERIZAÇÃO ---
 
             const renderTable = () => {
                 const tableBody = document.getElementById('screenTableBody');
@@ -163,12 +189,12 @@ graph TD
                     : screenData.filter(d => d.stage === currentFilter);
 
                 filteredData.forEach(item => {
-                    const errorPercentage = (item.errors / item.accesses) * 100;
+                    const errorPercentage = item.accesses > 0 ? (item.errors / item.accesses) * 100 : 0;
                     const isExpanded = expandedRow === item.id;
 
                     let errorColorClass = 'bg-green-200 text-green-800';
-                    if (errorPercentage >= 7) errorColorClass = 'bg-red-200 text-red-800';
-                    else if (errorPercentage >= 4) errorColorClass = 'bg-yellow-200 text-yellow-800';
+                    if (errorPercentage >= 10) errorColorClass = 'bg-red-200 text-red-800';
+                    else if (errorPercentage >= 5) errorColorClass = 'bg-yellow-200 text-yellow-800';
 
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-gray-100 cursor-pointer';
@@ -254,7 +280,6 @@ graph TD
                         rate: (d.errors / d.accesses * 100).toFixed(2)
                     }));
                 
-                // Paleta de cores do Banco do Brasil
                 const bbBlue = '#0033a0';
                 const bbYellow = '#fde500';
                 const bbLightBlue = '#0059a8';
@@ -284,18 +309,13 @@ graph TD
                                 color: (context) => {
                                     if (context.type !== 'data') return 'transparent';
                                     const value = context.raw.v;
-                                    // Texto preto para o amarelo, branco para os azuis
                                     return value > 10000 ? 'white' : 'black';
                                 },
-                                font: {
-                                    size: 12,
-                                    weight: 'bold',
-                                },
+                                font: { size: 12, weight: 'bold' },
                                 position: 'center',
                                 formatter: (context) => {
                                     if (context.type !== 'data') return;
                                     const item = context.raw._data;
-                                    // Mostra o nome apenas se houver espaço
                                     if (context.raw.w < 50 || context.raw.h < 30) return null;
                                     return [item.name, `${item.value.toLocaleString('pt-BR')} erros`];
                                 }
@@ -313,19 +333,16 @@ graph TD
                                     ]
                                 }
                             },
-                            legend: {
-                                display: false
-                            }
+                            legend: { display: false }
                         }
                     }
                 });
             };
 
-            // --- INICIALIZAÇÃO DA PÁGINA ---
             renderTreemap();
             renderFilters();
             renderTable();
-            lucide.createIcons(); // Renderiza todos os ícones na carga inicial
+            lucide.createIcons();
         });
     </script>
 </body>
