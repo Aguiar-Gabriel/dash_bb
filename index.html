@@ -40,22 +40,22 @@
                 <h2 class="text-xl font-bold text-gray-800 mb-2 flex items-center">
                     <i data-lucide="git-merge" class="mr-2"></i>Jornada Geral do Investidor
                 </h2>
-                <p class="text-sm text-gray-600 mb-4">Visão macro dos dois principais fluxos: o do <b>novo investidor</b> (com questionário) e o do <b>investidor atual</b> (atalho).</p>
+                <p class="text-sm text-gray-600 mb-4">Visão macro dos dois principais fluxos, agora com as taxas de erro em cada etapa crítica.</p>
                 <div class="mermaid flex justify-center">
 graph TD
-    A["Acesso Rápido<br>2.048.723 Clientes"] --> DEC{"Possui Questionário<br>Válido?"};
+    A["Acesso Rápido<br>2.048.723 Iterações<br>(Erro: 2.6%)"] --> DEC{"Possui Questionário Válido?"};
 
-    subgraph "Fluxo Novo Investidor (ou Questionário Vencido)"
-        DEC -->|Não| B["Iniciar Questionário<br>732.882 Clientes"];
-        B --> C["Responde Perguntas<br>254.964 Clientes"];
-        B -->|"Abandono de 65%"| OUT2["Saída<br>477.918 Clientes"];
+    subgraph Fluxo Novo Investidor
+        DEC -->|Não| B["Iniciar Questionário<br>732.882 Iterações<br>(Erro: 1.4%)"];
+        B --> C["Responde Perguntas<br>254.964 Iterações<br>(Erro: 7.4%)"];
+        B -->|"Abandono de 65%"| OUT2["Saída<br>477.918 Iterações"];
     end
 
-    subgraph "Fluxo Investidor Atual"
-         DEC -->|Sim| OUT1["Atalho para Hub<br>1.315.841 Clientes"];
+    subgraph Fluxo Investidor Atual
+         DEC -->|Sim| OUT1["Atalho para Hub<br>1.315.841 Iterações"];
     end
     
-    C --> D["Hub de Produtos<br>(Tela 'Novo Investimento')<br>552.970 Clientes"];
+    C --> D["Hub de Produtos<br>552.970 Iterações<br>(Erro: 4.4%)"];
     OUT1 --> D;
 
     style A fill:#e0f2fe,stroke:#0284c7,stroke-width:2px
@@ -86,9 +86,8 @@ graph TD
                     <h3 class="font-bold text-lg text-center text-gray-800 mb-2">Fundos</h3>
                     <div class="mermaid">
 graph TD
-    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 45.2%"| B["Tela de Fundos<br>302.743 Clientes"]
-    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style B fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    A["Hub<br>552.970 Iterações<br>(Erro: 4.4%)"] -->|"Queda de 45.2%"| B["Tela de Fundos<br>302.743 Iterações<br>(Erro: 5.6%)"]
+    style A,B fill:#dcfce7,stroke:#16a34a,stroke-width:2px
                     </div>
                 </div>
                 <!-- Funil CDB -->
@@ -96,10 +95,9 @@ graph TD
                     <h3 class="font-bold text-lg text-center text-gray-800 mb-2">CDB</h3>
                     <div class="mermaid">
 graph TD
-    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 62.4%"| B["Entrada CDB<br>207.694 Clientes"]
-    B -->|"Queda de 27.4%"| C["Contratação CDB<br>150.707 Clientes"]
-    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    A["Hub<br>552.970 Iterações<br>(Erro: 4.4%)"] --> B["Entrada CDB<br>207.694 Iterações<br>(Erro: 2.3%)"]
+    B -->|"Queda de 27.4%"| C["Contratação<br>150.707 Iterações<br>(Erro: 11.6%)"]
+    style A,B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
                     </div>
                 </div>
                 <!-- Funil LCA -->
@@ -107,10 +105,9 @@ graph TD
                     <h3 class="font-bold text-lg text-center text-gray-800 mb-2">LCA</h3>
                     <div class="mermaid">
 graph TD
-    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 79.4%"| B["Entrada LCA<br>113.927 Clientes"]
-    B -->|"Queda de 29.1%"| C["Contratação LCA<br>80.767 Clientes"]
-    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    A["Hub<br>552.970 Iterações<br>(Erro: 4.4%)"] --> B["Entrada LCA<br>113.927 Iterações<br>(Erro: 1.5%)"]
+    B -->|"Queda de 29.1%"| C["Contratação<br>80.767 Iterações<br>(Erro: 15.2%)"]
+    style A,B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
                     </div>
                 </div>
                 <!-- Funil LCI -->
@@ -118,10 +115,9 @@ graph TD
                     <h3 class="font-bold text-lg text-center text-gray-800 mb-2">LCI</h3>
                     <div class="mermaid">
 graph TD
-    A["Hub de Produtos<br>552.970 Clientes"] -->|"Queda de 86.5%"| B["Entrada LCI<br>74.493 Clientes"]
-    B -->|"Queda de 33.5%"| C["Contratação LCI<br>49.505 Clientes"]
-    style A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
-    style B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+    A["Hub<br>552.970 Iterações<br>(Erro: 4.4%)"] --> B["Entrada LCI<br>74.493 Iterações<br>(Erro: 1.6%)"]
+    B -->|"Queda de 33.5%"| C["Contratação<br>49.505 Iterações<br>(Erro: 1.5%)"]
+    style A,B,C fill:#dcfce7,stroke:#16a34a,stroke-width:2px
                     </div>
                 </div>
             </div>
@@ -141,7 +137,7 @@ graph TD
                         <tr>
                             <th class="w-10"></th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tela</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clientes</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Iterações</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% Erro</th>
                         </tr>
                     </thead>
