@@ -45,7 +45,7 @@
 graph TD
     A["Acesso Rápido<br>2.048.723 Interações<br>(Erro: 2.6%)"] --> DEC{"Possui Questionário Válido?"};
 
-    subgraph Fluxo Novo Investidor
+    subgraph  
         DEC -->|Não| B["Iniciar Questionário<br>732.882 Interações<br>(Erro: 1.4%)"];
         B --> C["Responde Perguntas<br>254.964 Interações<br>(Erro: 7.4%)"];
         B -->|"Abandono de 65%"| OUT2["Saída<br>477.918 Sessões Abandonadas"];
